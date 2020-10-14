@@ -1,15 +1,5 @@
 ﻿+++++++++++++++++++++++++++++++++++++++++++ SCRIPTS +++++++++++++++++++++++++++++++++++++++++++
 
-
-#EXTENDING ALL USERS PASSWORD#
-
-$Users = get-aduser -Filter "(Enabled -eq 'True') -And (ObjectClass -eq 'user') -And (PasswordNeverExpires -eq 'False')" -SearchBase "OU=GPMT Users,DC=gpmtreit,DC=com" | % {
-
-    Set-ADUser -Identity $_ -Replace @{pwdLastSet=0} 
-
-    Set-ADUser -Identity $_ -Replace @{pwdLastSet=-1} 
-}
-
 #####Get expiration dates#####
 Get-ADUser -filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed" | Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}} >> ExpirationDatesForPWDs.csv
 
