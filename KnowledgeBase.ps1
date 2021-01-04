@@ -1,20 +1,45 @@
 ﻿+++++++++++++++++++++++++++++++++++++++++++ SCRIPTS +++++++++++++++++++++++++++++++++++++++++++
+####Getting Distros and who manages it####
+Get-DistributionGroup -ResultSize unlimited -Filter * | Select DisplayName, ManagedBy| Sort-Object -Descending
+
+#####CHANGING MAX SEND AND RECEIVE FROM EXCHANGE#####
+If you are connecting to an Exchange server, then you do not need to modify anything as Outlook automatically retrieves the limit from the Exchange server.
+To configure the limit, add or modify the following value in the Registry:
+Key: HKEY_CURRENT_USER\Software\Microsoft\Office\<version>\Outlook\Preferences
+Value name: MaximumAttachmentSize
+Value type: REG_DWORD
+The value that you need to use is in KB. So if you know the amount of MB supported by your ISP, then you need to multiply that by 1024 to get the value that you need to enter. To allow for an unlimited size, you can set the value to 0.
+Examples;
+2MB-> 2048
+5MB-> 5120
+10MB-> 10240
+50MB-> 51200
+#######ADDING MULTIPLE USERS TO CALENDAR ##################
+Get-Mailbox | ForEach {Add-MailboxFolderPermission -Identity research@kettlehill.com:\Calendar -User $_.Alias -AccessRights Editor}
+
+######GETTING AND SETTING MAX SEND AND RECEIVE#####
+
+Get-Mailbox | Format-List MaxReceiveSize,MaxSendSize,RecipientLimits
+Get-Mailbox | Set-Mailbox $_.Name -MaxSendSize 25mb -MaxReceiveSize 35mb
+
+###CMD FOR DEVICE NAME AND DOMAIN###
+echo %COMPUTERNAME%.%USERDNSDOMAIN%
+
+##############REG KEY TO RECREATE CITRIX PROFILE################
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList.
+
+####EXTENDING ALL USERS PASSWORD####
+
+$Users = get-aduser -Filter "(Enabled -eq 'True') -And (ObjectClass -eq 'user') -And (PasswordNeverExpires -eq 'False')" -SearchBase "OU=GPMT Users,DC=gpmtreit,DC=com" | % {
+
+    Set-ADUser -Identity $_ -Replace @{pwdLastSet=0} 
+
+    Set-ADUser -Identity $_ -Replace @{pwdLastSet=-1} 
+}
 
 #####Get expiration dates#####
-Get-ADUser -filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed" | Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}} >> ExpirationDatesForPWDs.csv
-
-
-#####Get List of users and expiration dates#####
-get-aduser -Filter * -SearchBase "OU=Onyx Users,DC=onyxrenewables,DC=com" -Properties * | Select SamAccountName,
- msTSExpireDate | Format-List >> ExpirationDatesAsOf03172020.csv
-(edited)
-
-#####Get List of users and expiration dates#####
-
-get-aduser -Filter "(Enabled -eq 'True') -And (ObjectClass -eq 'user') -And (PasswordNeverExpires -eq 'False')" -SearchBase "OU=Users,OU=RENCO,DC=RencoGroup,DC=local" | % {
-    Set-ADUser $_ -Replace @{pwdLastSet=0}
-    Set-ADUser $_ -Replace @{pwdLastSet=-1}
-}
+Get-ADUser -filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed" |
+Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}}
 
 #####Changing Proxy Addresses For All Users#####
 
@@ -42,9 +67,7 @@ Set-AzureADUser -ObjectId 20278681-04a3-47d0-9128-2431d6143e9c -PasswordPolicies
 
 #####Get Users in a Group#####
 
-Get-ADUser -Filter * -Properties * | ForEach-Object {if($_.MemberOf -contains "CN=Citrix Apps,OU=Sunlight Groups,DC=corp,DC=sunlightfinancial,DC=com"){Write-Output $_.Name, $_.DistinguishedName | Out-File .\Test.csv -Append}}
-
-Get-ADUser -Filter * -Properties * | ForEach-Object {if($_.MemberOf -contains "CN=Citrix Apps,OU=Sunlight Groups,DC=corp,DC=sunlightfinancial,DC=com"){Select Name, DistinguishedName | ft Name, DistinguishedName}}
+Get-ADUser -Filter * -Properties * | ForEach-Object {if($_.MemberOf -contains "CN=Citrix Apps,OU=Sunlight Groups,DC=corp,DC=sunlightfinancial,DC=com"){Write-Output $_.Name | Out-File .\Test.csv -Append}}
 
 ####Pinging VPN Address#####
 While($True) {
