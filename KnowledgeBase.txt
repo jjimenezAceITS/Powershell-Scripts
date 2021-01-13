@@ -1,8 +1,19 @@
-﻿+++++++++++++++++++++++++++++++++++++++++++ SCRIPTS +++++++++++++++++++++++++++++++++++++++++++
-####Getting Distros and who manages it####
+﻿+++++++++++++++++++++++++++++++++++++++++++++
++											+
++				SCRIPTS						+
++											+
++++++++++++++++++++++++++++++++++++++++++++++
+
+####Finding name of account Name, Alias and DisplayName####
+$target = "Name"
+Get-Mailbox -Filter * | Where {$_.DisplayName -like $target -or $_.Name -like $target -or $_.Alias -like $target} | Select Name, DisplayName, Alias
+
+#### Find distribution groups and who manages ####
+
 Get-DistributionGroup -ResultSize unlimited -Filter * | Select DisplayName, ManagedBy| Sort-Object -Descending
 
 #####CHANGING MAX SEND AND RECEIVE FROM EXCHANGE#####
+
 If you are connecting to an Exchange server, then you do not need to modify anything as Outlook automatically retrieves the limit from the Exchange server.
 To configure the limit, add or modify the following value in the Registry:
 Key: HKEY_CURRENT_USER\Software\Microsoft\Office\<version>\Outlook\Preferences
@@ -14,7 +25,9 @@ Examples;
 5MB-> 5120
 10MB-> 10240
 50MB-> 51200
+
 #######ADDING MULTIPLE USERS TO CALENDAR ##################
+
 Get-Mailbox | ForEach {Add-MailboxFolderPermission -Identity research@kettlehill.com:\Calendar -User $_.Alias -AccessRights Editor}
 
 ######GETTING AND SETTING MAX SEND AND RECEIVE#####
@@ -23,9 +36,11 @@ Get-Mailbox | Format-List MaxReceiveSize,MaxSendSize,RecipientLimits
 Get-Mailbox | Set-Mailbox $_.Name -MaxSendSize 25mb -MaxReceiveSize 35mb
 
 ###CMD FOR DEVICE NAME AND DOMAIN###
+
 echo %COMPUTERNAME%.%USERDNSDOMAIN%
 
 ##############REG KEY TO RECREATE CITRIX PROFILE################
+
 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList.
 
 ####EXTENDING ALL USERS PASSWORD####
@@ -119,7 +134,11 @@ Send-MailMessage @messageParameters
 Get-SmbOpenFile | Where-Object -Property ShareRelativePath -Match “filename”
 
 --------------------------------------------------------------------------------------------------------------
-+++++++++++++++++++++++++++ LINKS +++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++
++											+
++				LINKS						+
++											+
++++++++++++++++++++++++++++++++++++++++++++++
 https://tech.xenit.se/join-windows-10-computer-azure-active-directory/
 
 Xenit TechnicalXenit Technical
